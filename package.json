@@ -1,0 +1,17 @@
+{
+  "name": "airbnb-clone",
+  "version": "1.0.0",
+  "description": "Full-stack Airbnb clone (client, admin, backend)",
+  "private": true,
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../client && npm install && cd ../admin && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:client": "cd client && npm start",
+    "dev:admin": "cd admin && npm start",
+    "build:client": "cd client && npm run build",
+    "build:admin": "cd admin && npm run build",
+    "build": "npm run build:client && npm run build:admin",
+    "start": "cd backend && npm start",
+    "seed": "cd backend && npm run seed"
+  }
+}

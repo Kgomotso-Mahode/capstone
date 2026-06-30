@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f7f7f7;
+  color: #222222;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-airbnb text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:bg-airbnb-dark active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-grey-light text-charcoal font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-airbnb active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-airbnb shadow-airbnb transition-all duration-300 hover:shadow-airbnb-hover;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-grey-light rounded-xl text-sm outline-none transition-all duration-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal;
+  }
+
+  .skeleton {
+    @apply bg-gradient-to-r from-grey-bg via-white to-grey-bg bg-[length:200%_100%] animate-pulse rounded-airbnb;
+  }
+}

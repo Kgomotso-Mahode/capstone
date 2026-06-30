@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Airbnb Cereal VF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #222222;
+  background: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#FF385C] text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:bg-[#e31c5f] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary-outline {
+    @apply border-2 border-white text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:bg-white hover:text-[#222222] active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply border border-[#ebebeb] text-[#222222] font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)];
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-[#ebebeb] rounded-xl text-sm outline-none transition-all duration-200 focus:border-[#222222] focus:ring-1 focus:ring-[#222222];
+  }
+
+  .skeleton {
+    @apply bg-gradient-to-r from-[#f7f7f7] via-white to-[#f7f7f7] bg-[length:200%_100%] animate-pulse rounded-[12px];
+  }
+}
