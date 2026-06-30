@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "Full-stack Airbnb clone (client, admin, backend)",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../client && npm install && cd ../admin && npm install",
+    "install:all": "npm install --prefix backend && npm install --prefix client && npm install --prefix admin",
+    "heroku-postbuild": "npm run install:all",
     "dev:backend": "cd backend && npm run dev",
     "dev:client": "cd client && npm start",
     "dev:admin": "cd admin && npm start",
