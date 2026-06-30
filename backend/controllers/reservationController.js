@@ -66,6 +66,7 @@ const createReservation = async (req, res) => {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ message: messages.join(', ') });
     }
+    console.error('createReservation error:', error.message, error.stack);
     res.status(400).json({ message: error.message });
   }
 };
@@ -78,6 +79,7 @@ const getReservationsByHost = async (req, res) => {
       .sort('-createdAt');
     res.json(reservations);
   } catch (error) {
+    console.error('getReservationsByHost error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -89,6 +91,7 @@ const getReservationsByUser = async (req, res) => {
       .sort('-createdAt');
     res.json(reservations);
   } catch (error) {
+    console.error('getReservationsByUser error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -102,6 +105,7 @@ const deleteReservation = async (req, res) => {
     await reservation.deleteOne();
     res.json({ message: 'Reservation cancelled' });
   } catch (error) {
+    console.error('deleteReservation error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };

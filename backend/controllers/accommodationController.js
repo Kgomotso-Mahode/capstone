@@ -21,6 +21,7 @@ const createAccommodation = async (req, res) => {
 
     res.status(201).json(accommodation);
   } catch (error) {
+    console.error('createAccommodation error:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -42,6 +43,7 @@ const getAccommodations = async (req, res) => {
     const accommodations = await Accommodation.find(filter).sort('-createdAt');
     res.json(accommodations);
   } catch (error) {
+    console.error('getAccommodations error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -54,6 +56,7 @@ const getAccommodationById = async (req, res) => {
     }
     res.json(accommodation);
   } catch (error) {
+    console.error('getAccommodationById error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -77,6 +80,7 @@ const updateAccommodation = async (req, res) => {
     });
     res.json(updated);
   } catch (error) {
+    console.error('updateAccommodation error:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -90,6 +94,7 @@ const deleteAccommodation = async (req, res) => {
     await accommodation.deleteOne();
     res.json({ message: 'Accommodation removed' });
   } catch (error) {
+    console.error('deleteAccommodation error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
