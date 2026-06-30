@@ -94,9 +94,26 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Server error' });
 });
 
+mongoose.connection.on("connected", () => console.log("MongoDB Connected"));
+mongoose.connection.on("error", err => console.error("MongoDB Error:", err));
+mongoose.connection.on("disconnected", () => console.log("MongoDB Disconnected"));
+
+if (!process.env.MONGODB_URI) {
+  console.error("MONGODB_URI is not defined in environment variables");
+  process.exit(1);
+}
+
+console.log("MONGODB_URI exists in environment variables");
+console.log("Attempting to connect to MongoDB...");
+
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err.message));
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("MongoDB connection failed:");
+    console.error(err);
+    console.error(err.stack);
+    process.exit(1);
+  });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
