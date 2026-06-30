@@ -4,6 +4,20 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+// ─── Process-Level Error Handlers ──────────────────────────────────────────
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION at:', promise);
+  console.error('  Reason:', reason?.message || reason);
+  if (reason?.stack) console.error('  Stack:', reason.stack);
+});
+
+// ─── Environment ────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -14,19 +28,51 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-// ─── Required Environment Variables ──────────────────────────────────────────
+// ─── Production Diagnostics ─────────────────────────────────────────────────
+console.log('');
+console.log('========================================');
+console.log('Server starting...');
+console.log('Node version:', process.version);
+console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('PORT:', process.env.PORT || '(not set)');
+console.log('MONGODB_URI set:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET set:', !!process.env.JWT_SECRET);
+console.log('CLIENT_ORIGIN set:', !!process.env.CLIENT_ORIGIN);
+console.log('========================================');
+console.log('');
+
+// ─── Required Environment Variables ─────────────────────────────────────────
 const REQUIRED_ENV_VARS = ['MONGODB_URI', 'JWT_SECRET', 'PORT'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
 if (missing.length > 0) {
-  console.error('MISSING REQUIRED ENVIRONMENT VARIABLES:', missing.join(', '));
+  console.error('');
+  console.error('FATAL: MISSING REQUIRED ENVIRONMENT VARIABLES:', missing.join(', '));
+  console.error('Set them via: heroku config:set VAR_NAME=value');
+  console.error('');
   process.exit(1);
 }
 
 const { MONGODB_URI, PORT, NODE_ENV } = process.env;
 
-// Validate MONGODB_URI format
-if (!MONGODB_URI.startsWith('mongodb://') && !MONGODB_URI.startsWith('mongodb+srv://')) {
-  console.error('MONGODB_URI must start with mongodb:// or mongodb+srv://');
+// ─── Client/Admin Build Validation ──────────────────────────────────────────
+const clientBuild = path.join(__dirname, '..', 'client', 'build');
+const adminBuild = path.join(__dirname, '..', 'admin', 'build');
+
+if (NODE_ENV === 'production') {
+  console.log('Checking build folders...');
+  console.log('  Client build exists:', fs.existsSync(path.join(clientBuild, 'index.html')));
+  console.log('  Admin build exists:', fs.existsSync(path.join(adminBuild, 'index.html')));
+}
+
+// ─── Normalize MongoDB URI ──────────────────────────────────────────────────
+let mongoUri = MONGODB_URI;
+if (mongoUri.includes('ssl=true') && !mongoUri.includes('tls=true')) {
+  mongoUri = mongoUri.replace('ssl=true', 'tls=true');
+  console.log('Normalized MONGODB_URI: replaced ssl=true with tls=true');
+}
+
+if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+  console.error('FATAL: MONGODB_URI must start with mongodb:// or mongodb+srv://');
   process.exit(1);
 }
 
@@ -34,7 +80,7 @@ if (NODE_ENV === 'production' && !process.env.CLIENT_ORIGIN) {
   console.warn('Warning: CLIENT_ORIGIN not set; CORS will allow all origins');
 }
 
-// ─── Middleware ───────────────────────────────────────────────────────────────
+// ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({
   origin: NODE_ENV === 'production'
     ? process.env.CLIENT_ORIGIN || true
@@ -50,12 +96,14 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static(uploadsDir));
 
-// ─── API Routes ──────────────────────────────────────────────────────────────
+// ─── API Routes ─────────────────────────────────────────────────────────────
+console.log('Registering API routes...');
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/users', userRoutes);
+console.log('API routes registered successfully');
 
-// ─── Health Endpoint ─────────────────────────────────────────────────────────
+// ─── Health Endpoint ────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   const mongoState = mongoose.connection.readyState;
   const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
@@ -66,10 +114,7 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// ─── Production Static Serving ───────────────────────────────────────────────
-const clientBuild = path.join(__dirname, '..', 'client', 'build');
-const adminBuild = path.join(__dirname, '..', 'admin', 'build');
-
+// ─── Production Static Serving ──────────────────────────────────────────────
 if (NODE_ENV === 'production') {
   const clientIndex = path.join(clientBuild, 'index.html');
   const adminIndex = path.join(adminBuild, 'index.html');
@@ -92,12 +137,12 @@ if (NODE_ENV === 'production') {
   }
 }
 
-// ─── 404 ─────────────────────────────────────────────────────────────────────
+// ─── 404 ────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// ─── Global Error Handler ────────────────────────────────────────────────────
+// ─── Global Error Handler ───────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
   console.error('UNHANDLED ERROR:', err.message || err);
   console.error('STACK:', err.stack || '(no stack trace)');
@@ -108,21 +153,18 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ message: 'Server error' });
 });
 
-// ─── MongoDB Connection & Server Start ───────────────────────────────────────
+// ─── MongoDB Connection & Server Start ──────────────────────────────────────
 mongoose.connection.on('connected', () => console.log('MongoDB connected'));
 mongoose.connection.on('error', err => console.error('MongoDB runtime error:', err.message));
 mongoose.connection.on('disconnected', () => console.log('MongoDB disconnected'));
 
 console.log('');
-console.log('Server starting...');
-console.log('NODE_ENV:', NODE_ENV || 'development');
-console.log('PORT:', PORT);
-console.log('MongoDB connection attempt...');
-console.log('');
+console.log('Attempting MongoDB connection...');
 
-mongoose.connect(MONGODB_URI, {
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 10000,
+mongoose.connect(mongoUri, {
+  serverSelectionTimeoutMS: 15000,
+  connectTimeoutMS: 30000,
+  heartbeatFrequencyMS: 10000,
 })
   .then(() => {
     app.listen(PORT, () => {
@@ -137,15 +179,34 @@ mongoose.connect(MONGODB_URI, {
   })
   .catch((err) => {
     console.error('');
-    console.error('=== MONGODB CONNECTION ERROR ===');
+    console.error('========================================');
+    console.error('MONGODB CONNECTION FAILED');
+    console.error('========================================');
     console.error('  Name:', err.name);
     console.error('  Message:', err.message);
     console.error('  Code:', err.code);
+    console.error('  Stack:', err.stack);
     if (err.reason) {
-      console.error('  Reason:', JSON.stringify(err.reason));
+      console.error('  Reason:');
+      try { console.error('    ', JSON.stringify(err.reason, null, 2)); }
+      catch (_) { console.error('    ', err.reason); }
     }
-    console.error('  Full error:', err);
-    console.error('=== EXITING ===');
+    if (err.cause) {
+      console.error('  Cause:', err.cause.message || err.cause);
+    }
     console.error('');
+    console.error('TROUBLESHOOTING:');
+    console.error('  1. Verify MONGODB_URI is correct in Heroku Config Vars');
+    console.error('  2. Check MongoDB Atlas -> Network Access -> IP Whitelist');
+    console.error('     Add 0.0.0.0/0 (allow from anywhere) for Heroku');
+    console.error('  3. Verify username and password are correct');
+    console.error('  4. Check that the database name exists in the URI');
+    console.error('  5. Ensure the cluster is running (not paused)');
+    console.error('');
+    console.error('Raw MONGODB_URI (credentials hidden):');
+    const redacted = mongoUri.replace(/:\/\/[^:]+:[^@]+@/, '://USER:PASSWORD@');
+    console.error('  ', redacted);
+    console.error('');
+    console.error('========================================');
     process.exit(1);
   });
