@@ -42,7 +42,7 @@ console.log('========================================');
 console.log('');
 
 // ─── Required Environment Variables ─────────────────────────────────────────
-const REQUIRED_ENV_VARS = ['MONGODB_URI', 'JWT_SECRET', 'PORT'];
+const REQUIRED_ENV_VARS = ['MONGODB_URI', 'JWT_SECRET'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
 if (missing.length > 0) {
   console.error('');
@@ -52,7 +52,8 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-const { MONGODB_URI, PORT, NODE_ENV } = process.env;
+const { MONGODB_URI, NODE_ENV } = process.env;
+const PORT = process.env.PORT || 5000;
 
 // ─── Client/Admin Build Validation ──────────────────────────────────────────
 const clientBuild = path.join(__dirname, '..', 'client', 'build');
@@ -153,7 +154,18 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ message: 'Server error' });
 });
 
-// ─── MongoDB Connection & Server Start ──────────────────────────────────────
+// ─── Server Start (bind port immediately) ────────────────────────────────────
+app.listen(PORT, () => {
+  console.log('');
+  console.log('========================================');
+  console.log('Express server started on port', PORT);
+  console.log('Node version:', process.version);
+  console.log('Environment:', NODE_ENV || 'development');
+  console.log('========================================');
+  console.log('');
+});
+
+// ─── Async MongoDB Connection (non-blocking) ────────────────────────────────
 mongoose.connection.on('connected', () => console.log('MongoDB connected'));
 mongoose.connection.on('error', err => console.error('MongoDB runtime error:', err.message));
 mongoose.connection.on('disconnected', () => console.log('MongoDB disconnected'));
@@ -165,48 +177,35 @@ mongoose.connect(mongoUri, {
   serverSelectionTimeoutMS: 15000,
   connectTimeoutMS: 30000,
   heartbeatFrequencyMS: 10000,
-})
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log('');
-      console.log('========================================');
-      console.log('Express server started on port', PORT);
-      console.log('Node version:', process.version);
-      console.log('Environment:', NODE_ENV || 'development');
-      console.log('========================================');
-      console.log('');
-    });
-  })
-  .catch((err) => {
-    console.error('');
-    console.error('========================================');
-    console.error('MONGODB CONNECTION FAILED');
-    console.error('========================================');
-    console.error('  Name:', err.name);
-    console.error('  Message:', err.message);
-    console.error('  Code:', err.code);
-    console.error('  Stack:', err.stack);
-    if (err.reason) {
-      console.error('  Reason:');
-      try { console.error('    ', JSON.stringify(err.reason, null, 2)); }
-      catch (_) { console.error('    ', err.reason); }
-    }
-    if (err.cause) {
-      console.error('  Cause:', err.cause.message || err.cause);
-    }
-    console.error('');
-    console.error('TROUBLESHOOTING:');
-    console.error('  1. Verify MONGODB_URI is correct in Heroku Config Vars');
-    console.error('  2. Check MongoDB Atlas -> Network Access -> IP Whitelist');
-    console.error('     Add 0.0.0.0/0 (allow from anywhere) for Heroku');
-    console.error('  3. Verify username and password are correct');
-    console.error('  4. Check that the database name exists in the URI');
-    console.error('  5. Ensure the cluster is running (not paused)');
-    console.error('');
-    console.error('Raw MONGODB_URI (credentials hidden):');
-    const redacted = mongoUri.replace(/:\/\/[^:]+:[^@]+@/, '://USER:PASSWORD@');
-    console.error('  ', redacted);
-    console.error('');
-    console.error('========================================');
-    process.exit(1);
-  });
+}).catch((err) => {
+  console.error('');
+  console.error('========================================');
+  console.error('MONGODB CONNECTION FAILED');
+  console.error('========================================');
+  console.error('  Name:', err.name);
+  console.error('  Message:', err.message);
+  console.error('  Code:', err.code);
+  console.error('  Stack:', err.stack);
+  if (err.reason) {
+    console.error('  Reason:');
+    try { console.error('    ', JSON.stringify(err.reason, null, 2)); }
+    catch (_) { console.error('    ', err.reason); }
+  }
+  if (err.cause) {
+    console.error('  Cause:', err.cause.message || err.cause);
+  }
+  console.error('');
+  console.error('TROUBLESHOOTING:');
+  console.error('  1. Verify MONGODB_URI is correct in Heroku Config Vars');
+  console.error('  2. Check MongoDB Atlas -> Network Access -> IP Whitelist');
+  console.error('     Add 0.0.0.0/0 (allow from anywhere) for Heroku');
+  console.error('  3. Verify username and password are correct');
+  console.error('  4. Check that the database name exists in the URI');
+  console.error('  5. Ensure the cluster is running (not paused)');
+  console.error('');
+  console.error('Raw MONGODB_URI (credentials hidden):');
+  const redacted = mongoUri.replace(/:\/\/[^:]+:[^@]+@/, '://USER:PASSWORD@');
+  console.error('  ', redacted);
+  console.error('');
+  console.error('========================================');
+});
