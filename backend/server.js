@@ -70,7 +70,9 @@ if (NODE_ENV === 'production') {
 }
 
 // ─── Normalize MongoDB URI ──────────────────────────────────────────────────
-let mongoUri = MONGODB_URI;
+let mongoUri = (process.env.MONGODB_URI || '').trim();
+console.log('  MONGODB_URI prefix:', JSON.stringify(mongoUri.substring(0, 15)));
+
 if (mongoUri.includes('ssl=true') && !mongoUri.includes('tls=true')) {
   mongoUri = mongoUri.replace('ssl=true', 'tls=true');
   console.log('  Normalized MONGODB_URI: replaced ssl=true with tls=true');
@@ -78,6 +80,8 @@ if (mongoUri.includes('ssl=true') && !mongoUri.includes('tls=true')) {
 
 if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
   console.error('FATAL: MONGODB_URI must start with mongodb:// or mongodb+srv://');
+  console.error('  Received value starts with:', JSON.stringify(mongoUri.substring(0, 25)));
+  console.error('  First 20 chars hex:', Buffer.from(mongoUri.substring(0, 20)).toString('hex'));
   process.exit(1);
 }
 
