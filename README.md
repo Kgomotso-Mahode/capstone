@@ -51,101 +51,17 @@ A full-stack Airbnb-inspired accommodation booking platform built for South Afri
 └── package.json           # Root scripts for build/deploy
 ```
 
-## Getting Started
+## Images
 
-### Prerequisites
+All listing placeholder images and section images are sourced from [Unsplash](https://unsplash.com), a free stock photo platform.
 
-- Node.js 20.x
-- MongoDB (local or Atlas)
-
-### 1. Install Dependencies
-
-```bash
-npm run install:all
-```
-
-### 2. Configure Environment
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Edit `backend/.env`:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/airbnb-clone
-JWT_SECRET=your-secret-key-here
-```
-
-### 3. Seed the Database (optional)
-
-```bash
-npm run seed
-```
-
-This creates 40+ South African property listings and a host user (`host@airbnb.co.za` / `host123456`).
-
-### 4. Run in Development
-
-Open three terminals:
-
-```bash
-# Terminal 1 — Backend
-npm run dev:backend
-
-# Terminal 2 — Client (port 3000)
-npm run dev:client
-
-# Terminal 3 — Admin panel (port 3001)
-npm run dev:admin
-```
-
-The client runs on `http://localhost:3000` and proxies API requests to `http://localhost:5000`.
-
-### 5. Production Build
-
-```bash
-npm run build        # Builds client and admin
-npm start            # Starts the backend server
-```
-
-In production, the backend serves both the client and admin SPAs.
-
-## API Endpoints
-
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/users/login` | Login (returns JWT) |
-| POST | `/api/users/register` | Register new user |
-| PUT | `/api/users/role` | Update user role (auth required) |
-
-### Accommodations
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/accommodations` | List all (supports filters) |
-| GET | `/api/accommodations/:id` | Get single listing |
-| POST | `/api/accommodations` | Create listing (host, auth + image upload) |
-| PUT | `/api/accommodations/:id` | Update listing (host, auth + image upload) |
-| DELETE | `/api/accommodations/:id` | Delete listing (host, auth) |
-
-### Reservations
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/reservations` | Create reservation (auth required) |
-| GET | `/api/reservations/user` | Get user's reservations (auth required) |
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGODB_URI` | Yes | MongoDB connection string |
-| `JWT_SECRET` | Yes | Secret for JWT signing |
-| `PORT` | No | Server port (default: 5000) |
-| `CLIENT_ORIGIN` | No | CORS allowed origins (comma-separated) |
-| `REACT_APP_API_URL` | No | API base URL for client (empty = proxy in dev) |
+| Image | Source |
+|-------|--------|
+| Cape Town listings | [Unsplash – photo-1580060839134](https://unsplash.com/photos/photo-1580060839134-75a5edca2e99) |
+| Default listing fallback | [Unsplash – photo-1560448204](https://unsplash.com/photos/photo-1560448204-e02f11c3d0e2) |
+| Hero section | [Unsplash – photo-1576485290814](https://unsplash.com/photos/photo-1576485290814-1c72aa4bbb8e) |
+| Gift cards section | [Unsplash – photo-1512486130939](https://unsplash.com/photos/photo-1512486130939-2c4f79935e4f) |
+| Hosting section | [Unsplash – photo-1564013799919](https://unsplash.com/photos/photo-1564013799919-ab600027ffc6) |
 
 ## License
 

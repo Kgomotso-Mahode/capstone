@@ -59,7 +59,12 @@ export const getImageUrl = (imagePath) => {
 
 export const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop';
 
+export const CAPE_TOWN_IMAGE = 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&h=600&fit=crop';
+
 export const getListingImage = (listing) => {
+  if (listing?.location?.toLowerCase().includes('cape town')) {
+    return CAPE_TOWN_IMAGE;
+  }
   const url = getImageUrl(listing?.images?.[0]);
   return url || DEFAULT_LISTING_IMAGE;
 };
