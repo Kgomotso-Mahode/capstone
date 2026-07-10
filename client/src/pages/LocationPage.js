@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getAccommodations } from '../api';
+import { getAccommodations, getListingImage } from '../api';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
@@ -67,13 +67,6 @@ const LocationPage = () => {
     setFilterBedrooms('');
     setFilterBathrooms('');
     loadListings({ location: '', type: '', guests: '', maxPrice: '' });
-  };
-
-  const getImage = (listing) => {
-    if (listing.images && listing.images.length > 0) {
-      return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${listing.images[0]}`;
-    }
-    return `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop`;
   };
 
   const toggleFavorite = (id) => {
@@ -211,7 +204,7 @@ const LocationPage = () => {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={getImage(listing)}
+                        src={getListingImage(listing)}
                         alt={listing.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />

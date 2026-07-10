@@ -5,15 +5,15 @@ const getToken = () => localStorage.getItem('client_token');
 const request = async (endpoint, options = {}) => {
   const token = getToken();
   const config = {
+    ...options,
     headers: {
-      'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
-    ...options,
   };
 
   if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
     config.body = JSON.stringify(config.body);
   }
 
@@ -24,7 +24,7 @@ const request = async (endpoint, options = {}) => {
   let res;
   try {
     res = await fetch(`${API_URL}${endpoint}`, config);
-  } catch {
+  } catch (err) {
     throw new Error('Network error — please check your connection and ensure the server is running');
   }
 
@@ -36,10 +36,23 @@ const request = async (endpoint, options = {}) => {
   }
 
   if (!res.ok) {
-    throw new Error(data.message || 'Request failed');
+    throw new Error(data.message || `Request failed (${res.status})`);
   }
 
   return data;
+};
+
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${API_URL || 'http://localhost:5000'}${imagePath}`;
+};
+
+export const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop';
+
+export const getListingImage = (listing) => {
+  const url = getImageUrl(listing?.images?.[0]);
+  return url || DEFAULT_LISTING_IMAGE;
 };
 
 export const login = (email, password) =>
@@ -76,3 +89,9 @@ export const createReservation = (reservationData) =>
 
 export const getReservationsByUser = () =>
   request('/api/reservations/user');
+
+export const createAccommodation = (formData) =>
+  request('/api/accommodations', {
+    method: 'POST',
+    body: formData,
+  });

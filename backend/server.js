@@ -71,6 +71,8 @@ if (NODE_ENV === 'production') {
 
 // ─── Normalize MongoDB URI ──────────────────────────────────────────────────
 let mongoUri = (process.env.MONGODB_URI || '').trim();
+// Remove accidental 'MONGODB_URI=' prefix if the config was set incorrectly
+mongoUri = mongoUri.replace(/^MONGODB_URI=/i, '');
 console.log('  MONGODB_URI prefix:', JSON.stringify(mongoUri.substring(0, 15)));
 
 if (mongoUri.includes('ssl=true') && !mongoUri.includes('tls=true')) {
@@ -178,10 +180,39 @@ app.use((err, req, res, _next) => {
   console.error('UNHANDLED ERROR:', err.message || err);
   console.error('  Stack:', err.stack || '(no stack trace)');
   console.error('  Request:', req.method, req.originalUrl);
+
+  // Multer file-filter error (invalid file type)
   if (err.message === 'Only image files are allowed') {
-    return res.status(400).json({ message: err.message });
+    return res.status(400).json({ message: 'Only image files (JPEG, PNG, GIF, WebP) are allowed' });
   }
-  res.status(500).json({ message: 'Server error' });
+
+  // Multer file-size limit error
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ message: 'File too large. Maximum size is 5MB per image' });
+  }
+
+  // Multer too-many-files error
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return res.status(400).json({ message: 'Too many files. Maximum is 10 images' });
+  }
+
+  // Multer unexpected field error
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({ message: `Unexpected field: ${err.field}` });
+  }
+
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map(e => e.message);
+    return res.status(400).json({ message: messages.join('. ') });
+  }
+
+  // Mongoose cast error (invalid ObjectId)
+  if (err.name === 'CastError' && err.kind === 'ObjectId') {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+
+  res.status(500).json({ message: err.message || 'Server error' });
 });
 
 // ─── Server Start (bind port immediately) ────────────────────────────────────

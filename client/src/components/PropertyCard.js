@@ -1,18 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const getImage = (listing) => {
-  if (listing.images && listing.images.length > 0) {
-    return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${listing.images[0]}`;
-  }
-  const images = {
-    'Cape Town': 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=400&h=300&fit=crop',
-    'Johannesburg': 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=400&h=300&fit=crop',
-    'Durban': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop',
-    'Midrand': 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop',
-  };
-  return images[listing.location] || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop';
-};
+import { getListingImage } from '../api';
 
 const PropertyCard = ({ listing }) => {
   const navigate = useNavigate();
@@ -24,7 +12,7 @@ const PropertyCard = ({ listing }) => {
     >
       <div className="aspect-[4/3] overflow-hidden rounded-xl mb-2 bg-grey-bg">
         <img
-          src={getImage(listing)}
+          src={getListingImage(listing)}
           alt={listing.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"

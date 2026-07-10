@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAccommodationById, createReservation } from '../api';
+import { getAccommodationById, createReservation, getImageUrl, DEFAULT_LISTING_IMAGE } from '../api';
 
 const SkeletonDetails = () => (
   <div className="max-w-[1120px] mx-auto px-6 py-8 animate-pulse">
@@ -53,8 +53,7 @@ const LocationDetailsPage = () => {
   };
 
   const getImage = (imgPath) => {
-    if (!imgPath) return 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=500&fit=crop';
-    return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${imgPath}`;
+    return getImageUrl(imgPath) || DEFAULT_LISTING_IMAGE;
   };
 
   const calcNights = () => {
@@ -119,7 +118,7 @@ const LocationDetailsPage = () => {
 
   const images = listing.images?.length > 0
     ? listing.images.map((img) => getImage(img))
-    : ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=500&fit=crop'];
+    : [DEFAULT_LISTING_IMAGE];
 
   while (images.length < 5) {
     images.push(images[0]);

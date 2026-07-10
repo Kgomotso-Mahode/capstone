@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAccommodations } from '../api';
+import { getAccommodations, getListingImage } from '../api';
 
 const HostDashboard = () => {
   const { user, becomeHost, logout } = useAuth();
@@ -120,11 +120,7 @@ const HostDashboard = () => {
           {listings.map((listing) => (
             <div key={listing._id} className="card overflow-hidden flex">
               <div className="w-32 h-32 flex-shrink-0 bg-grey-bg overflow-hidden">
-                {listing.images?.[0] ? (
-                  <img src={`http://localhost:5000${listing.images[0]}`} alt={listing.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-grey text-xs">No Image</div>
-                )}
+                <img src={getListingImage(listing)} alt={listing.title} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 p-4 flex flex-col justify-between">
                 <div>

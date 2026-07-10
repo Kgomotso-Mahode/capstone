@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { createAccommodation } from '../api';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const TYPES = ['Entire apartment', 'Private room', 'Shared room', 'Entire house', 'Entire villa'];
 const AMENITY_OPTIONS = ['wifi', 'kitchen', 'free parking', 'pool', 'air conditioning', 'heating', 'washer', 'dryer', 'tv', 'workspace'];
 
@@ -17,6 +17,7 @@ const HostCreateListing = () => {
     amenities: [],
   });
   const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,16 @@ const HostCreateListing = () => {
   };
 
   const handleImages = (e) => {
-    setImages([...e.target.files]);
+    const files = [...e.target.files];
+    setImages(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  };
+
+  const removeImage = (index) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const validate = () => {
@@ -72,18 +82,10 @@ const HostCreateListing = () => {
       });
       images.forEach((img) => formData.append('images', img));
 
-      const token = localStorage.getItem('client_token');
-      const res = await fetch(`${API_URL}/api/accommodations`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to create listing');
-
+      await createAccommodation(formData);
       navigate('/host/dashboard');
     } catch (err) {
-      setServerError(err.message);
+      setServerError(err.message || 'Failed to create listing. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -188,17 +190,33 @@ const HostCreateListing = () => {
           <div>
             <label className="block text-sm font-medium mb-1.5">Images</label>
             <div className="border-2 border-dashed border-grey-light rounded-xl p-6 text-center hover:border-charcoal transition-colors cursor-pointer">
-              <input type="file" multiple accept="image/*" onChange={handleImages} className="hidden" id="image-upload" />
+              <input type="file" multiple accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleImages} className="hidden" id="image-upload" />
               <label htmlFor="image-upload" className="cursor-pointer">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5" className="mx-auto mb-2">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <path d="M21 15l-5-5L5 21"/>
                 </svg>
-                <p className="text-sm text-grey">Click to upload images</p>
+                <p className="text-sm text-grey">Click to upload images (JPEG, PNG, GIF, WebP — max 5MB each)</p>
                 {images.length > 0 && <p className="text-sm text-airbnb mt-2">{images.length} file(s) selected</p>}
               </label>
             </div>
+            {imagePreviews.length > 0 && (
+              <div className="flex flex-wrap gap-3 mt-4">
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-grey-light group">
+                    <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      x
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="submit" className="btn-primary w-full py-3.5" disabled={loading}>

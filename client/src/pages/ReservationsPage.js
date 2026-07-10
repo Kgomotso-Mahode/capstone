@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getReservationsByUser } from '../api';
+import { getReservationsByUser, getListingImage } from '../api';
 
 const ReservationsPage = () => {
   const { user } = useAuth();
@@ -68,15 +68,11 @@ const ReservationsPage = () => {
           {reservations.map((r) => (
             <div key={r._id} className="card overflow-hidden flex flex-col sm:flex-row">
               <div className="sm:w-48 h-32 flex-shrink-0 overflow-hidden bg-grey-bg">
-                {r.accommodation?.images?.[0] ? (
-                  <img
-                    src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${r.accommodation.images[0]}`}
-                    alt={r.accommodation.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-grey text-sm">No Image</div>
-                )}
+                <img
+                  src={getListingImage(r.accommodation)}
+                  alt={r.accommodation?.title || 'Listing'}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1 p-5 flex flex-col gap-1.5">
                 <h3 className="font-semibold text-base">{r.accommodation?.title || 'Deleted listing'}</h3>
