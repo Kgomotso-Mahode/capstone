@@ -9,6 +9,7 @@ const HostDashboard = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [becomingHost, setBecomingHost] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -50,10 +51,21 @@ const HostDashboard = () => {
           Share your space and earn extra income. List your property on Airbnb and connect with travellers from around the world.
         </p>
         <button
-          onClick={becomeHost}
-          className="btn-primary text-lg px-10 py-4"
+          onClick={async () => {
+            setBecomingHost(true);
+            setError('');
+            try {
+              await becomeHost();
+            } catch (err) {
+              setError(err.message || 'Failed to become a host. Please try again.');
+            } finally {
+              setBecomingHost(false);
+            }
+          }}
+          disabled={becomingHost}
+          className="btn-primary text-lg px-10 py-4 disabled:opacity-50"
         >
-          Become a Host
+          {becomingHost ? 'Updating...' : 'Become a Host'}
         </button>
       </div>
     );

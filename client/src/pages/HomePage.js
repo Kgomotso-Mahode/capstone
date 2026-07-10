@@ -115,7 +115,7 @@ const HomePage = () => {
             </div>
             <div className="relative h-[200px] md:h-[280px] rounded-xl overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1607083206968-2f89b3f0d0c0?w=600&h=400&fit=crop"
+                src="https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=600&h=400&fit=crop"
                 alt="Gift cards"
                 className="w-full h-full object-cover"
               />

@@ -35,6 +35,15 @@ const request = async (endpoint, options = {}) => {
     throw new Error('Invalid response from server');
   }
 
+  if (res.status === 401) {
+    localStorage.removeItem('client_token');
+    localStorage.removeItem('client_user');
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+    throw new Error(data.message || 'Session expired. Please log in again.');
+  }
+
   if (!res.ok) {
     throw new Error(data.message || `Request failed (${res.status})`);
   }

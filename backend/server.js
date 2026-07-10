@@ -33,7 +33,7 @@ console.log('  NODE_ENV:       ', process.env.NODE_ENV || 'development');
 console.log('  PORT:           ', process.env.PORT || '5000 (default)');
 console.log('  MONGODB_URI:    ', process.env.MONGODB_URI ? '✓ set' : '✗ MISSING');
 console.log('  JWT_SECRET:     ', process.env.JWT_SECRET ? '✓ set' : '✗ MISSING');
-console.log('  CLIENT_ORIGIN:  ', process.env.CLIENT_ORIGIN || '(not set – CORS allows all)');
+console.log('  CLIENT_ORIGIN:  ', process.env.CLIENT_ORIGIN || '(not set – using same-origin in monorepo)');
 console.log('========================================');
 console.log('');
 
@@ -246,7 +246,7 @@ mongoose.connect(mongoUri, {
   serverSelectionTimeoutMS: 15000,
   connectTimeoutMS: 30000,
   heartbeatFrequencyMS: 10000,
-  bufferCommands: false,
+  bufferCommands: true,
 }).catch((err) => {
   console.error('');
   console.error('========================================');

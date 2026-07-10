@@ -40,11 +40,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const becomeHost = async () => {
-    const updatedUser = await apiUpdateRole('host');
-    const stored = { ...JSON.parse(localStorage.getItem('client_user') || '{}'), role: 'host' };
-    localStorage.setItem('client_user', JSON.stringify(stored));
-    setUser(stored);
-    return updatedUser;
+    try {
+      const updatedUser = await apiUpdateRole('host');
+      const stored = { ...JSON.parse(localStorage.getItem('client_user') || '{}'), role: 'host' };
+      localStorage.setItem('client_user', JSON.stringify(stored));
+      setUser(stored);
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = () => {
